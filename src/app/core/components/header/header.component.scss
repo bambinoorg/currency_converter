@@ -1,0 +1,33 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  .left_part {
+
+    & .title {
+      color: #ffffff;
+    }
+  }
+  .right_part {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+
+      & .currency_block {
+        display: flex;
+        padding: 10px;
+        border: 1px solid #ffffff;
+        & .title {
+          color: #ffffff;
+          margin-right: 5px;
+        }
+
+        & .rate {
+          font-weight: 700;
+        }
+      }
+  }
+
+}

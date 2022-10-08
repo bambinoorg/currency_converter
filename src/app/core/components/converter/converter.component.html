@@ -1,0 +1,68 @@
+<div class="converter">
+  <h3 class="converter_title"> Convert here</h3>
+  <div class="converter_wrapper">
+    <div class="converter_left">
+      <div class="icon_container"  [ngSwitch]="currencyTypeFirst.value">
+        <ng-container *ngSwitchCase="'UAH'">
+          <img class="icon" src="assets/uah.png" alt="">
+        </ng-container>
+        <ng-container *ngSwitchCase="'USD'">
+          <img class="icon" src="assets/usd.png" alt="">
+        </ng-container>
+        <ng-container *ngSwitchCase="'EUR'">
+          <img class="icon" src="assets/euro.png" alt="">
+        </ng-container>
+      <select
+        class="select"
+        [formControl]="currencyTypeFirst"
+        (change)="exchangeFirst()">
+        <ng-container *ngFor="let item of currencyArr">
+          <option selected [value]="item.ccy">{{ item.ccy }}</option>
+        </ng-container>
+        <option (change)="selectUAH1()" [value]="'UAH'" >UAH</option>
+      </select>
+        </div>
+      <app-input
+        [value]="result"
+        [inputControl]="currencyValueFirst"
+        (firstValue)="input($event)"
+      >
+      </app-input>
+
+    </div>
+    <div class="converter_right">
+
+      <div class="icon_container"  [ngSwitch]="currencyTypeSecond.value">
+        <ng-container *ngSwitchCase="'UAH'">
+          <img class="icon" src="assets/uah.png" alt="">
+        </ng-container>
+        <ng-container *ngSwitchCase="'USD'">
+          <img class="icon" src="assets/usd.png" alt="">
+        </ng-container>
+        <ng-container *ngSwitchCase="'EUR'">
+          <img class="icon" src="assets/euro.png" alt="">
+        </ng-container>
+
+      <select
+        class="select"
+        [formControl]="currencyTypeSecond"
+        (change)="exchangeFirst()">
+
+        <ng-container *ngFor="let item of currencyArr">
+          <option [value]="item.ccy">{{ item.ccy }}</option>
+        </ng-container>
+        <option (change)="selectUAH2()" [value]="'UAH'" >
+          <div class="icon">UAH</div>
+
+         </option>
+      </select>
+      </div>
+      <app-input
+        [value]="result2"
+        [inputControl]="currencyValueSecond"
+        (firstValue)="input2($event)"
+      >
+      </app-input>
+    </div>
+  </div>
+</div>

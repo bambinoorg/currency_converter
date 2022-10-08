@@ -1,0 +1,13 @@
+<div class="container">
+  <header class="header">
+    <div class="left_part">
+      <h2 class="title" >Currency Converter</h2>
+    </div>
+    <div class="right_part">
+     <div class="currency_block" *ngFor="let item of currencyArr">
+       <p class="title">{{item.ccy}}: </p>
+       <p class="rate">{{item.buy}} /{{item.sale}} </p>
+     </div>
+    </div>
+  </header>
+</div>
