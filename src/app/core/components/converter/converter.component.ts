@@ -1,118 +1,108 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {CurrencyService} from "../../services/currency.service";
-import {Currency} from "../../interfaces/currency";
-import {FormControl} from "@angular/forms";
+import {FormBuilder, FormGroup} from "@angular/forms";
+import {Subject, take, takeUntil} from "rxjs";
 
-//I didn't find a good free currency API and used PB and some math :)
-
+//Have more time and find a good free api, and make a code much better.
 @Component({
   selector: 'app-converter',
   templateUrl: './converter.component.html',
   styleUrls: ['./converter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ConverterComponent implements OnInit {
+export class ConverterComponent implements OnInit, OnDestroy {
 
-  public currencyArr: Currency[] = [];
-  public currencyTypeFirst: FormControl = new FormControl<string>('UAH');
-  public currencyTypeSecond: FormControl = new FormControl<string>('USD');
-  public currencyValueFirst: FormControl = new FormControl<number>(1);
-  public currencyValueSecond: FormControl = new FormControl<number>(this.currencyValueFirst);
-  public result!: number;
-  public result2!: number;
-  public firstValue!: number
-  public secondValue!: number
+  public currencyArr!: string[];
+  public exchangeRates!: [];
+  public currencyGroup!: FormGroup;
+  private destroy$: Subject<null> = new Subject<null>();
 
   constructor(
     private currencyService: CurrencyService,
-    private cdr: ChangeDetectorRef
-    ) {
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
+  ) {
   }
 
   ngOnInit(): void {
-    this.currencyService.getExchangeRates().subscribe((resp) => {
-      this.currencyArr = resp.map((el: Currency) => {
-        return {
-          ...el,
-          buy: el.buy.slice(0, 5),
-          sale: el.sale.slice(0, 5),
-        }
-      }).filter((el: Currency) => el.base_ccy !== 'USD');
-      this.cdr.detectChanges();
-    });
+    this.createGroup();
+    this.getCurrency("UAH");
+    this.createSubscribe();
   }
 
-  public selectUAH1(): void {
-    this.exchangeFirst();
-  }
-  public selectUAH2(): void {
-    this.exchangeSecond();
+  ngOnDestroy(): void {
+    this.destroy$.next(null);
+    this.destroy$.complete();
   }
 
-  public input(firstValue: number): void {
-    this.firstValue = firstValue;
-    this.exchangeFirst();
-  }
+  public changeCurrencyType(key: string): void {
+    if (key === 'first') {
+      const baseCurrency = this.currencyGroup.get('endCurrencyType')?.value;
+      this.getCurrency(baseCurrency);
+      const value = this.currencyGroup.get('secondValue')?.value
+      console.log(value)
+      this.exchange('firstValue', value, 'startCurrencyType');
 
-  public input2(secondValue: number) {
-    this.secondValue = secondValue;
-    this.exchangeSecond();
-  }
+    } else if (key === 'second') {
+      const baseCurrency = this.currencyGroup.get('startCurrencyType')?.value;
+      this.getCurrency(baseCurrency);
+      const value = this.currencyGroup.get('firstValue')?.value
+      this.exchange('secondValue', value, 'endCurrencyType');
 
-  public exchangeFirst(): void {
-    const exchange = +this.currencyArr[1].buy / +this.currencyArr[0].buy;
-
-      if (this.currencyTypeFirst.value === 'UAH' && this.currencyTypeSecond.value === 'UAH') {
-        this.result2 = this.firstValue;
-      } else if (this.currencyTypeFirst.value === 'UAH') {
-        const res = this.currencyArr.filter((el: Currency) => el.ccy === this.currencyTypeSecond.value)
-        this.result2 = +(this.firstValue / Number(res[0].buy)).toFixed(3)
-      } else if (this.currencyTypeFirst.value === 'USD' && this.currencyTypeSecond.value === 'USD') {
-        this.result2 = this.firstValue;
-      } else if (this.currencyTypeFirst.value === 'USD' && this.currencyTypeSecond.value === 'UAH' ) {
-        this.convertOnyType();
-      } else if (this.currencyTypeFirst.value === 'USD') {
-        this.result2 = +(this.firstValue / exchange).toFixed(3)
-      } else if (this.currencyTypeFirst.value === 'EUR' && this.currencyTypeSecond.value === 'UAH' ) {
-        this.convertOnyType();
-      } else if (this.currencyTypeFirst.value === 'EUR' && this.currencyTypeSecond.value === 'EUR') {
-        this.result2 = this.firstValue;
-      } else if (this.currencyTypeFirst.value === 'EUR') {
-        this.result2 = +(this.firstValue / exchange).toFixed(3);
-      }
-
-  }
-
-  public exchangeSecond(): void {
-    const exchange = +this.currencyArr[1].buy / +this.currencyArr[0].buy;
-
-    if (this.currencyTypeSecond.value === 'UAH' && this.currencyTypeFirst.value === 'UAH') {
-      this.result = this.secondValue;
-    } else if (this.currencyTypeSecond.value === 'UAH') {
-      const res = this.currencyArr.filter((el: Currency) => el.ccy === this.currencyTypeFirst.value)
-      this.result = +(this.secondValue / Number(res[0].buy)).toFixed(3)
-    } else if ( this.currencyTypeSecond.value === 'USD' && this.currencyTypeFirst.value === 'USD' ) {
-      this.result = this.secondValue;
-    } else if (this.currencyTypeSecond.value === 'USD' && this.currencyTypeFirst.value === 'UAH' ) {
-      this.convertOnyTypeSecond();
-    } else if (this.currencyTypeSecond.value === 'USD') {
-      this.result = +(this.secondValue / exchange).toFixed(3)
-    } else if (this.currencyTypeSecond.value === 'EUR' && this.currencyTypeFirst.value === 'UAH' ) {
-      this.convertOnyTypeSecond();
-    } else if (this.currencyTypeSecond.value === 'EUR' && this.currencyTypeFirst.value === 'EUR') {
-      this.result = this.secondValue;
-    } else if (this.currencyTypeSecond.value === 'EUR') {
-      this.result = +(this.secondValue / exchange).toFixed(3);
     }
   }
 
-  private convertOnyType(): void {
-    const res = this.currencyArr.filter((el: Currency) => el.ccy === this.currencyTypeFirst.value)
-    this.result2 = +(this.firstValue * Number(res[0].buy)).toFixed(3)
-  }
-  private convertOnyTypeSecond(): void {
-    const res = this.currencyArr.filter((el: Currency) => el.ccy === this.currencyTypeSecond.value)
-    this.result = +(this.secondValue * Number(res[0].buy)).toFixed(3)
+  private exchange(patchKey: string, value: number, currencyTypeKey: string): void {
+
+    const currencyType = this.currencyGroup.get(currencyTypeKey)?.value;
+    const currencyValue = (value * this.exchangeRates[currencyType]).toFixed(2);
+    console.log(currencyType);
+    console.log(this.exchangeRates[currencyType],"this.exchangeRates[currencyType]")
+    this.currencyGroup.patchValue({[patchKey] : +currencyValue }, { emitEvent: false });
+    this.cdr.detectChanges();
   }
 
+  private createGroup(): void {
+    this.currencyGroup = this.fb.group({
+      startCurrencyType: ['UAH'],
+      endCurrencyType: ['USD'],
+      firstValue: [null],
+      secondValue: [null]
+    })
+  }
+
+  private getCurrency(baseCurrency: string): void {
+    this.currencyService.getExchangeRates(baseCurrency)
+      .pipe(takeUntil(this.destroy$),
+        take(1))
+      .subscribe((resp) => {
+      this.currencyArr = Object.keys(resp.rates);
+      this.exchangeRates = resp.rates;
+        console.log(this.exchangeRates);
+        this.cdr.detectChanges();
+    })
+  }
+
+  private createSubscribe(): void {
+    this.currencyGroup.get('firstValue')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        this.exchange('secondValue', value, 'endCurrencyType');
+      })
+    this.currencyGroup.get('secondValue')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        this.exchange('firstValue', value, 'startCurrencyType');
+      })
+  }
+
+ public changeBaseStart(): void {
+   this.getCurrency( this.currencyGroup.get('startCurrencyType')?.value);
+  }
+
+  changeBaseEnd() {
+    this.getCurrency( this.currencyGroup.get('endCurrencyType')?.value);
+  }
 }
+
+

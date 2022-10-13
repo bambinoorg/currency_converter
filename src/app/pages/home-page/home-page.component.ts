@@ -7,13 +7,9 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@an
   styleUrls: ['./home-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomePageComponent implements OnInit {
+export class HomePageComponent {
 
-  constructor(private cdr : ChangeDetectorRef) {
-  }
-
-  ngOnInit() {
-    this.cdr.detectChanges();
+  constructor() {
   }
 
 }

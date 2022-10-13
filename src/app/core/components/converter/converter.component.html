@@ -2,37 +2,49 @@
   <h3 class="converter_title"> Convert here</h3>
   <div class="converter_wrapper">
     <div class="converter_left">
-      <div class="icon_container"  [ngSwitch]="currencyTypeFirst.value">
-        <ng-container *ngSwitchCase="'UAH'">
-          <img class="icon" src="assets/uah.png" alt="">
-        </ng-container>
-        <ng-container *ngSwitchCase="'USD'">
-          <img class="icon" src="assets/usd.png" alt="">
-        </ng-container>
-        <ng-container *ngSwitchCase="'EUR'">
-          <img class="icon" src="assets/euro.png" alt="">
-        </ng-container>
+      <div class="icon_container" >
+       <ng-container *ngTemplateOutlet="startSwitch"></ng-container>
       <select
         class="select"
-        [formControl]="currencyTypeFirst"
-        (change)="exchangeFirst()">
-        <ng-container *ngFor="let item of currencyArr">
-          <option selected [value]="item.ccy">{{ item.ccy }}</option>
+        [formControl]="currencyGroup.get('startCurrencyType') | getControl"
+        (change)="changeCurrencyType('first')"
+        >
+        <ng-container  *ngFor="let item of currencyArr">
+          <option [value]="item" >{{ item }}</option>
         </ng-container>
-        <option (change)="selectUAH1()" [value]="'UAH'" >UAH</option>
       </select>
         </div>
       <app-input
-        [value]="result"
-        [inputControl]="currencyValueFirst"
-        (firstValue)="input($event)"
+        (click)="changeBaseStart()"
+        [inputControl]="currencyGroup.get('firstValue') | getControl"
       >
       </app-input>
 
     </div>
     <div class="converter_right">
+      <div class="icon_container" >
+        <ng-container *ngTemplateOutlet="endSwitch"></ng-container>
+      <select
+        class="select"
+        [formControl]="currencyGroup.get('endCurrencyType') | getControl"
+        (change)="changeCurrencyType('second')"
+        >
 
-      <div class="icon_container"  [ngSwitch]="currencyTypeSecond.value">
+        <ng-container *ngFor="let item of currencyArr">
+          <option  [value]="item" >{{ item }}</option>
+        </ng-container>
+      </select>
+      </div>
+      <app-input
+        (click)="changeBaseEnd()"
+        [inputControl]="currencyGroup.get('secondValue') | getControl"
+      >
+      </app-input>
+    </div>
+  </div>
+</div>
+    <ng-template #startSwitch>
+      <ng-container [ngSwitch]="currencyGroup.get('startCurrencyType')?.value">
         <ng-container *ngSwitchCase="'UAH'">
           <img class="icon" src="assets/uah.png" alt="">
         </ng-container>
@@ -42,27 +54,32 @@
         <ng-container *ngSwitchCase="'EUR'">
           <img class="icon" src="assets/euro.png" alt="">
         </ng-container>
-
-      <select
-        class="select"
-        [formControl]="currencyTypeSecond"
-        (change)="exchangeFirst()">
-
-        <ng-container *ngFor="let item of currencyArr">
-          <option [value]="item.ccy">{{ item.ccy }}</option>
+        <ng-container *ngSwitchCase="'GBP'">
+          <img class="icon" src="assets/united_kingdom.png" alt="">
         </ng-container>
-        <option (change)="selectUAH2()" [value]="'UAH'" >
-          <div class="icon">UAH</div>
+        <ng-container *ngSwitchCase="'CNY'">
+          <img class="icon" src="assets/china.png" alt="">
+        </ng-container>
+      </ng-container>
+    </ng-template>
 
-         </option>
-      </select>
-      </div>
-      <app-input
-        [value]="result2"
-        [inputControl]="currencyValueSecond"
-        (firstValue)="input2($event)"
-      >
-      </app-input>
-    </div>
-  </div>
-</div>
+<ng-template #endSwitch>
+  <ng-container [ngSwitch]="currencyGroup.get('endCurrencyType')?.value">
+    <ng-container *ngSwitchCase="'UAH'">
+      <img class="icon" src="assets/uah.png" alt="">
+    </ng-container>
+    <ng-container *ngSwitchCase="'USD'">
+      <img class="icon" src="assets/usd.png" alt="">
+    </ng-container>
+    <ng-container *ngSwitchCase="'EUR'">
+      <img class="icon" src="assets/euro.png" alt="">
+    </ng-container>
+    <ng-container *ngSwitchCase="'GBP'">
+      <img class="icon" src="assets/united_kingdom.png" alt="">
+    </ng-container>
+    <ng-container *ngSwitchCase="'CNY'">
+      <img class="icon" src="assets/china.png" alt="">
+    </ng-container>
+  </ng-container>
+</ng-template>
+
